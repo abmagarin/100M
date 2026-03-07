@@ -9,7 +9,10 @@ export default function RootLayout() {
   const segments = useSegments();
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState<any>(null);
-  const [userTable, setUserTable] = useState<number>(0); // Estado para la mesa
+  const [userTable, setUserTable] = useState<number>(0);
+
+  // NUEVO: Este es tu "pase de control"
+  const [hasCheckedRedirect, setHasCheckedRedirect] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -24,15 +27,17 @@ export default function RootLayout() {
         }
       } else {
         setUserTable(0);
+        // Si el usuario cierra sesión, reseteamos el control para la próxima vez
+        setHasCheckedRedirect(false);
       }
-
       setInitializing(false);
     });
     return unsubscribe;
   }, []);
 
   useEffect(() => {
-    if (initializing) return;
+    // 1. Si todavía está cargando o YA hemos hecho la redirección inicial, NO HACER NADA
+    if (initializing || hasCheckedRedirect) return;
 
     const inAuthGroup =
       segments[0] === "(tabs)" ||
@@ -41,18 +46,20 @@ export default function RootLayout() {
       segments[0] === "tableLayout";
 
     if (user) {
-      if (userTable && segments[0] !== "tableLayout") {
-        // SI TIENE MESA ACTIVA: Lo mandamos directo a la mesa
-        setTimeout(() => router.replace("/tableLayout"), 1);
-      } else if (!userTable && !inAuthGroup) {
-        // SI NO TIENE MESA: Lo mandamos al menú principal (main)
-        setTimeout(() => router.replace("/main"), 1);
+      // 2. Solo ejecutamos esto UNA VEZ al inicio o tras el login
+      if (userTable > 0) {
+        router.replace("/tableLayout");
+      } else {
+        router.replace("/main");
       }
+      // 3. Marcamos que el control inicial ya se ha hecho
+      setHasCheckedRedirect(true);
     } else if (!user && inAuthGroup) {
-      // --- LÓGICA CUANDO NO HAY USUARIO ---
-      setTimeout(() => router.replace("/login"), 1);
+      // Si no hay usuario y está intentando entrar en zona protegida
+      router.replace("/login");
+      setHasCheckedRedirect(true);
     }
-  }, [user, userTable, initializing, segments]);
+  }, [user, userTable, initializing, hasCheckedRedirect]); // Quitamos 'segments' de aquí para que no vigile cada movimiento
 
   if (initializing) return null;
 
