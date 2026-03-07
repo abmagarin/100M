@@ -32,7 +32,7 @@ const guardarUsuario = async (
       tableRequests: [],
       friends: [],
       fechaRegistro: serverTimestamp(),
-      table: 0,
+      table: null,
       activo: true,
     });
 
