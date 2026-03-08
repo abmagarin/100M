@@ -27,7 +27,9 @@ export default function LoginScreen() {
       ? router.push("/friends")
       : id === 1
         ? router.push("/tableInvite")
-        : null;
+        : id === 2
+          ? router.push("/joinTable")
+          : null;
   };
 
   /*useEffect(() => {

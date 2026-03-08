@@ -67,7 +67,7 @@ export default function TableInviteScreen() {
       }
     };
     fetchFriendsData();
-  }, []);
+  }, [auth.currentUser?.uid]);
 
   // LÓGICA DE TOGGLE
   const toggleFriend = (id: string) => {

@@ -64,7 +64,6 @@ export default function friendsScreen() {
 
     const userDocRef = doc(db, "usuarios", user.uid);
 
-    // onSnapshot escucha cambios en tiempo real en Firestore
     const unsubscribe = onSnapshot(userDocRef, async (snapshot) => {
       if (snapshot.exists()) {
         const userData = snapshot.data();
@@ -119,18 +118,15 @@ export default function friendsScreen() {
       }
 
       // 2. Obtenemos los datos del usuario actual (el que envía)
-      // Para esto necesitamos tener guardado el código del usuario actual en algún sitio
-      // Supongamos que lo tenemos en una variable 'micodigoUnico'
       const userReceptorDoc = querySnapshot.docs[0];
       const receptorRef = doc(db, "usuarios", userReceptorDoc.id);
 
       // 3. Añadimos NUESTRO código a SU lista de friendRequests
-      // Usamos arrayUnion para no sobreescribir los que ya tenga
       await updateDoc(receptorRef, {
         friendRequests: arrayUnion(code),
       });
 
-      setFriendCode(""); // Limpiamos el input
+      setFriendCode("");
       sendToast("¡Solicitud enviada con éxito!");
     } catch (error) {
       console.error("Error al enviar solicitud:", error);
@@ -174,7 +170,6 @@ export default function friendsScreen() {
       const user = auth.currentUser;
       if (!user) return;
 
-      // Simplemente eliminamos el código de la lista de friendRequests
       const userRef = doc(db, "usuarios", user.uid);
       await updateDoc(userRef, {
         friendRequests: reqUser.friendRequests
@@ -182,7 +177,6 @@ export default function friendsScreen() {
           : [],
       });
 
-      // Actualizamos la lista local
       setFullRequests((prev) =>
         prev.filter((r) => r.codigoUnico !== reqUser.codigoUnico),
       );

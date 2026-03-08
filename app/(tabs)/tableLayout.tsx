@@ -79,40 +79,52 @@ export default function TableLayoutScreen() {
   };
 
   useEffect(() => {
+    let unsubscribeUser: () => void;
     let unsubscribeMesa: () => void;
 
-    const iniciarEscuchadorRealTime = async () => {
-      const user = auth.currentUser;
-      if (!user) return;
+    const user = auth.currentUser;
 
-      try {
-        const userRef = doc(db, "usuarios", user.uid);
-        const userSnap = await getDoc(userRef);
+    if (!user) return;
 
-        if (userSnap.exists() && userSnap.data().table) {
-          const mesaId = userSnap.data().table;
+    console.log("Iniciando vigilancia para el usuario:", user.uid);
+    const userRef = doc(db, "usuarios", user.uid);
 
-          unsubscribeMesa = onSnapshot(doc(db, "mesas", mesaId), (snapshot) => {
-            if (snapshot.exists()) {
-              const data = snapshot.data();
-              console.log("¡Cambio detectado en la nube!", data.nombre);
+    unsubscribeUser = onSnapshot(userRef, (userSnap) => {
+      if (userSnap.exists()) {
+        const mesaId = userSnap.data().table;
+
+        if (mesaId) {
+          console.log("ID de mesa detectado en el perfil:", mesaId);
+
+          if (unsubscribeMesa) {
+            console.log("Cerrando conexión con mesa anterior...");
+            unsubscribeMesa();
+          }
+
+          unsubscribeMesa = onSnapshot(doc(db, "mesas", mesaId), (mesaSnap) => {
+            if (mesaSnap.exists()) {
+              const data = mesaSnap.data();
+              console.log("Datos de la mesa actualizados:", data.nombre);
 
               setNombreMesa(data.nombre || "Mesa sin nombre");
-              setCodigoMesa(`#${mesaId}`);
+              setCodigoMesa(mesaId);
+            } else {
+              console.log("La mesa ya no existe en la base de datos");
             }
           });
+        } else {
+          console.log("El usuario ya no tiene mesa asignada. Redirigiendo...");
+          router.replace("/main");
         }
-      } catch (error) {
-        console.error("Error en el escuchador:", error);
       }
-    };
-
-    iniciarEscuchadorRealTime();
+    });
 
     return () => {
+      console.log("Limpiando todos los escuchadores...");
+      if (unsubscribeUser) unsubscribeUser();
       if (unsubscribeMesa) unsubscribeMesa();
     };
-  }, []);
+  }, [auth.currentUser?.uid]);
 
   return (
     <View style={styles.outerContainer}>
