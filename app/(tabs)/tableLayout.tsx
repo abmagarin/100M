@@ -10,7 +10,7 @@ import {
   TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import { db, auth } from "../../firebase";
 import { doc, updateDoc, getDoc, onSnapshot } from "firebase/firestore";
@@ -20,10 +20,15 @@ export default function TableLayoutScreen() {
   const [nombreMesa, setNombreMesa] = useState("Mesa sin nombre");
   const [codigoMesa, setCodigoMesa] = useState("#123456");
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [confirmCloseVisible, setIsConfirmCloseVisible] = useState(false);
+  const [isCloseVisible, setCloseVisible] = useState(false);
+  const [isInactivoVisible, setInactivoVisible] = useState(false);
   const [tempNombre, setTempNombre] = useState("");
 
   const [mostrarToast, setMostrarToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
+
+  const pathname = usePathname();
 
   // Datos de prueba
   const [foodItems] = useState([
@@ -108,6 +113,17 @@ export default function TableLayoutScreen() {
 
               setNombreMesa(data.nombre || "Mesa sin nombre");
               setCodigoMesa(mesaId);
+
+              if (data.creadorId === user.uid) {
+                setCloseVisible(true);
+              } else {
+                setCloseVisible(false);
+              }
+              if (!data.activo) {
+                setInactivoVisible(true);
+              } else {
+                setInactivoVisible(false);
+              }
             } else {
               console.log("La mesa ya no existe en la base de datos");
             }
@@ -125,6 +141,44 @@ export default function TableLayoutScreen() {
       if (unsubscribeMesa) unsubscribeMesa();
     };
   }, [auth.currentUser?.uid]);
+
+  const closeTable = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userRef = doc(db, "usuarios", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        console.error("No se encontró el perfil del usuario");
+        return;
+      }
+
+      const datosUsuario = userSnap.data();
+      const mesaId = datosUsuario.table;
+
+      if (!mesaId || mesaId === "") {
+        console.log("Mesa ya vaciada previamente. Abortando ejecución.");
+        return;
+      }
+
+      const mesaRef = doc(db, "mesas", mesaId);
+
+      if (isCloseVisible) {
+        await updateDoc(mesaRef, {
+          activo: false,
+          usuariosActivos: [],
+        });
+      }
+
+      await updateDoc(userRef, {
+        table: "",
+      });
+    } catch (error) {
+      console.error(`Error cerrando la mesa: `, error);
+    }
+  };
 
   return (
     <View style={styles.outerContainer}>
@@ -145,7 +199,7 @@ export default function TableLayoutScreen() {
                 setIsModalVisible(true);
               }}
             >
-              <Text style={styles.tableName}>{nombreMesa}</Text>
+              <Text style={[styles.tableName]}>{nombreMesa}</Text>
               <Ionicons
                 name="create-outline"
                 size={16}
@@ -205,18 +259,92 @@ export default function TableLayoutScreen() {
             ))}
           </View>
         </View>
-
-        <View style={styles.accountsWrapper}>
-          <View style={styles.accountBox}>
-            <Text style={styles.accountLabel}>Total Mesa</Text>
-            <Text style={styles.accountValue}>24.50€</Text>
-          </View>
-          <View style={[styles.accountBox, styles.myAccount]}>
-            <Text style={styles.accountLabelWhite}>Tu parte</Text>
-            <Text style={styles.accountValueWhite}>8.20€</Text>
+        <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
+          {isCloseVisible && (
+            <TouchableOpacity
+              style={[styles.btnConfirm, { margin: 10 }]}
+              onPress={() => {
+                setIsConfirmCloseVisible(true);
+              }}
+            >
+              <Text style={styles.btnTextConfirm}>Cerrar Mesa</Text>
+            </TouchableOpacity>
+          )}
+          <View style={styles.accountsWrapper}>
+            <View style={styles.accountBox}>
+              <Text style={styles.accountLabel}>Total Mesa</Text>
+              <Text style={styles.accountValue}>24.50€</Text>
+            </View>
+            <View style={[styles.accountBox, styles.myAccount]}>
+              <Text style={styles.accountLabelWhite}>Tu parte</Text>
+              <Text style={styles.accountValueWhite}>8.20€</Text>
+            </View>
           </View>
         </View>
       </ScrollView>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isInactivoVisible}
+        onRequestClose={() => setInactivoVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={[styles.modalTitle, { textAlign: "center" }]}>
+              El anfitrión ha cerrado la mesa
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.btnConfirm}
+                onPress={() => {
+                  closeTable();
+                  setInactivoVisible(false);
+                  router.push("/main");
+                }}
+              >
+                <Text style={styles.btnTextConfirm}>Aceptar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={confirmCloseVisible}
+        onRequestClose={() => setIsConfirmCloseVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={[styles.modalTitle, { textAlign: "center" }]}>
+              ¿Seguro que quieres cerrar la mesa?
+            </Text>
+            <Text style={styles.modalText}>
+              Echará a todos los integrantes y no podrás volver a entrar
+            </Text>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.btnCancel}
+                onPress={() => setIsConfirmCloseVisible(false)}
+              >
+                <Text style={styles.btnTextCancel}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.btnConfirm}
+                onPress={() => {
+                  closeTable();
+                  setIsConfirmCloseVisible(false);
+                  router.push("/main");
+                }}
+              >
+                <Text style={styles.btnTextConfirm}>Aceptar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       <Modal
         animationType="fade"
         transparent={true}
@@ -282,7 +410,7 @@ const styles = StyleSheet.create({
   logo: { width: 80, height: 50, resizeMode: "contain" },
   tableName: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: "#474747",
     textTransform: "uppercase",
   },
@@ -309,7 +437,7 @@ const styles = StyleSheet.create({
   },
   columnTitle: {
     fontSize: 12,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: "#aaa",
     marginBottom: 10,
     textTransform: "uppercase",
@@ -324,7 +452,7 @@ const styles = StyleSheet.create({
   drinkCard: { flexDirection: "column", alignItems: "center" },
   itemText: { fontSize: 14, color: "#474747", fontWeight: "600" },
   itemTextSmall: { fontSize: 11, color: "#474747", textAlign: "center" },
-  itemQty: { color: "#cb464a", fontWeight: "bold" },
+  itemQty: { color: "#cb464a", fontWeight: "700" },
   btnAdd: {
     backgroundColor: "#cb464a",
     borderRadius: 10,
@@ -371,13 +499,13 @@ const styles = StyleSheet.create({
   },
   myAccount: { backgroundColor: "#474747", borderColor: "#474747" },
   accountLabel: { fontSize: 10, color: "#aaa", textTransform: "uppercase" },
-  accountValue: { fontSize: 18, fontWeight: "bold", color: "#474747" },
+  accountValue: { fontSize: 18, fontWeight: "700", color: "#474747" },
   accountLabelWhite: {
     fontSize: 10,
     color: "#ddd",
     textTransform: "uppercase",
   },
-  accountValueWhite: { fontSize: 18, fontWeight: "bold", color: "#fff" },
+  accountValueWhite: { fontSize: 18, fontWeight: "700", color: "#fff" },
   requestCode: {
     fontSize: 13,
     color: "#888",
@@ -398,7 +526,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: "#474747",
     marginBottom: 20,
   },
@@ -432,11 +560,11 @@ const styles = StyleSheet.create({
   },
   btnTextCancel: {
     color: "#888",
-    fontWeight: "bold",
+    fontWeight: "700",
   },
   btnTextConfirm: {
     color: "#fff",
-    fontWeight: "bold",
+    fontWeight: "700",
   },
   toastContainer: {
     position: "absolute",
@@ -459,5 +587,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     marginLeft: 8,
+  },
+  modalText: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    marginBottom: 20,
   },
 });

@@ -98,9 +98,9 @@ export default function LoginScreen() {
                       styles.title,
                       {
                         fontSize: 28,
-                        width: "100%", // Forzamos el ancho
-                        marginBottom: 0, // Quitamos el margen inferior para que no empuje
-                        lineHeight: undefined, // Dejamos que el sistema lo calcule
+                        width: "100%",
+                        marginBottom: 0,
+                        lineHeight: undefined,
                       },
                     ]}
                   >
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f5eee2",
   },
-  text: { fontSize: 24, fontWeight: "bold" },
+  text: { fontSize: 24, fontWeight: "700" },
   logo: { width: 150, height: 150, resizeMode: "contain", marginLeft: -230 },
   outerContainer: {
     flex: 1,
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: "bold",
+    fontWeight: "800",
     color: "#474747",
     marginBottom: 30,
     textTransform: "uppercase",

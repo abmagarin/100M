@@ -155,7 +155,6 @@ export default function friendsScreen() {
       });
 
       // 3. Actualizar las listas locales para reflejar los cambios
-      setFullFriends((prev) => [...prev, reqUser]);
       setFullRequests((prev) =>
         prev.filter((r) => r.codigoUnico !== reqUser.codigoUnico),
       );
@@ -413,7 +412,7 @@ const styles = StyleSheet.create({
   btnTextWhite: {
     color: "#ffffff",
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "700",
     textTransform: "uppercase",
   },
   toastContainer: {
@@ -512,12 +511,12 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: "white",
-    fontWeight: "bold",
+    fontWeight: "700",
     fontSize: 18,
   },
   requestName: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: "#474747",
   },
   requestCode: {

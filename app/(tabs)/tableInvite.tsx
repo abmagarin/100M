@@ -21,7 +21,9 @@ import {
   arrayUnion,
   addDoc,
   serverTimestamp,
+  onSnapshot,
 } from "firebase/firestore";
+import { usePathname } from "expo-router";
 
 interface Usuario {
   id: string;
@@ -35,6 +37,7 @@ export default function TableInviteScreen() {
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
   const [mostrarToast, setMostrarToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
+  const pathname = usePathname();
 
   const sendToast = (msg: string) => {
     setToastMsg(msg);
@@ -45,13 +48,14 @@ export default function TableInviteScreen() {
   };
 
   useEffect(() => {
-    const fetchFriendsData = async () => {
-      const user = auth.currentUser;
-      if (!user) return;
+    const user = auth.currentUser;
+    if (!user) return;
 
-      const userDoc = await getDoc(doc(db, "usuarios", user.uid));
-      if (userDoc.exists()) {
-        const codigos = userDoc.data().friends || [];
+    const userDocRef = doc(db, "usuarios", user.uid);
+
+    const unsubscribe = onSnapshot(userDocRef, async (userSnap) => {
+      if (userSnap.exists()) {
+        const codigos = userSnap.data().friends || [];
         const usuariosRef = collection(db, "usuarios");
 
         const dataPromesas = codigos.map(async (cod: string) => {
@@ -63,11 +67,14 @@ export default function TableInviteScreen() {
         });
 
         const resultados = await Promise.all(dataPromesas);
+
         setFullFriends(resultados.filter((r): r is Usuario => r !== null));
+        console.log("Lista de amigos actualizada en tiempo real");
       }
-    };
-    fetchFriendsData();
-  }, [auth.currentUser?.uid]);
+    });
+
+    return () => unsubscribe();
+  }, [auth.currentUser?.uid, pathname]);
 
   // LÓGICA DE TOGGLE
   const toggleFriend = (id: string) => {
@@ -96,7 +103,6 @@ export default function TableInviteScreen() {
       const mesaRef = await crearMesa(
         user.uid,
         `Mesa de ${datosUsuario.nombre || "Usuario"}`,
-        datosUsuario.codigoUnico,
       );
 
       const promesasInvitaciones = selectedFriends.map((friendId) => {
@@ -117,18 +123,15 @@ export default function TableInviteScreen() {
     }
   };
 
-  const crearMesa = async (
-    uid: string,
-    nombre: string,
-    codigoUsuario: string,
-  ) => {
+  const crearMesa = async (uid: string, nombre: string) => {
     try {
       const docRef = await addDoc(collection(db, "mesas"), {
         creadorId: uid,
         nombre: nombre,
-        usuarios: [codigoUsuario],
+        usuarios: [uid],
         activo: true,
         fechaCreacion: serverTimestamp(),
+        usuariosActivos: [uid],
       });
       console.log("¡Datos guardados en Firestore!");
       return docRef;
@@ -234,7 +237,7 @@ const styles = StyleSheet.create({
   logo: { width: 120, height: 80, resizeMode: "contain", marginBottom: 20 },
   title: {
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: "800",
     color: "#888",
     textTransform: "uppercase",
     marginBottom: 20,
@@ -275,10 +278,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 8,
   },
-  avatarText: { color: "white", fontWeight: "bold", fontSize: 18 },
+  avatarText: { color: "white", fontWeight: "800", fontSize: 18 },
   friendName: {
     fontSize: 12,
-    fontWeight: "700",
+    fontWeight: "800",
     color: "#474747",
     textAlign: "center",
   },
@@ -293,7 +296,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     elevation: 5,
   },
-  btnConfirmText: { color: "white", fontWeight: "bold", fontSize: 16 },
+  btnConfirmText: { color: "white", fontWeight: "800", fontSize: 16 },
   toastContainer: {
     position: "absolute",
     bottom: 50,

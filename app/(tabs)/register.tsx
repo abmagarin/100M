@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f5eee2",
   },
-  text: { fontSize: 24, fontWeight: "bold" },
+  text: { fontSize: 24, fontWeight: "800" },
   logo: {
     position: "absolute",
     top: 0,
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: "bold",
+    fontWeight: "800",
     color: "#474747",
     marginBottom: 30,
     textTransform: "uppercase",

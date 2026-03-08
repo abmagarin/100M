@@ -10,13 +10,14 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { db, auth } from "../../firebase";
-import { useRouter } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import {
   doc,
   onSnapshot,
   getDoc,
   updateDoc,
   arrayRemove,
+  arrayUnion,
 } from "firebase/firestore";
 
 interface TableInvitation {
@@ -35,6 +36,8 @@ export default function FriendsScreen() {
   const [mostrarToast, setMostrarToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
 
+  const pathname = usePathname();
+
   const sendToast = (msg: string) => {
     setToastMsg(msg);
     setMostrarToast(true);
@@ -48,18 +51,16 @@ export default function FriendsScreen() {
 
     const userDocRef = doc(db, "usuarios", user.uid);
 
-    // Escuchamos nuestro propio documento de usuario
     const unsubscribe = onSnapshot(userDocRef, async (snapshot) => {
       if (snapshot.exists()) {
         const userData = snapshot.data();
-        const tRequests = userData.tableRequests || []; // Array de UIDs tipo "L4RxJSS..."
+        const tRequests = userData.tableRequests || [];
 
         const promesasMesas = tRequests.map(async (mesaUid: string) => {
           try {
             const mesaSnap = await getDoc(doc(db, "mesas", mesaUid));
             if (mesaSnap.exists() && mesaSnap.data().activo) {
               const mesaData = mesaSnap.data();
-              // Obtenemos el nombre del que creó la mesa
               const anfitrionSnap = await getDoc(
                 doc(db, "usuarios", mesaData.creadorId),
               );
@@ -70,6 +71,10 @@ export default function FriendsScreen() {
                   ? anfitrionSnap.data().nombre
                   : "Usuario",
               };
+            } else if (mesaSnap.exists() && !mesaSnap.data().activo) {
+              await updateDoc(userDocRef, {
+                tableRequests: arrayRemove(mesaUid),
+              });
             }
           } catch (e) {
             console.error(e);
@@ -85,7 +90,7 @@ export default function FriendsScreen() {
     });
 
     return () => unsubscribe();
-  }, [auth.currentUser?.uid]);
+  }, [auth.currentUser?.uid, pathname]);
 
   // --- LÓGICA PARA UNIRSE (ACEPTAR O MANUAL) ---
   const handleJoinTable = async (mesaId: string) => {
@@ -94,12 +99,18 @@ export default function FriendsScreen() {
       if (!user) return;
 
       const userRef = doc(db, "usuarios", user.uid);
+      const mesaRef = doc(db, "mesas", mesaId);
 
       // 1. Guardamos el UID de la mesa en nuestro campo 'table'
       // 2. Limpiamos esa invitación de nuestro array 'tableRequests'
       await updateDoc(userRef, {
         table: mesaId,
         tableRequests: arrayRemove(mesaId),
+      });
+
+      await updateDoc(mesaRef, {
+        usuariosActivos: arrayUnion(user.uid),
+        usuarios: arrayUnion(user.uid),
       });
 
       sendToast("¡Te has unido a la mesa!");
@@ -243,7 +254,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 13,
-    fontWeight: "bold",
+    fontWeight: "800",
     color: "#888",
     marginBottom: 15,
     textTransform: "uppercase",
@@ -291,7 +302,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginRight: 12,
   },
-  nameText: { fontSize: 16, fontWeight: "bold", color: "#474747" },
+  nameText: { fontSize: 16, fontWeight: "800", color: "#474747" },
   subText: { fontSize: 12, color: "#999" },
   actionGroup: { flexDirection: "row", gap: 8 },
   miniBtn: {
