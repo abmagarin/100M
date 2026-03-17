@@ -1,20 +1,14 @@
-import { useState, useEffect } from "react";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
   Image,
   ScrollView,
-  TextInput,
+  StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { db, auth } from "../../firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { useRouter } from "expo-router";
 import Header from "../../components/Header";
-import { doc, updateDoc } from "firebase/firestore";
-import { inicializarCartaCompleta } from "@/utils/bulkupload";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -50,6 +44,7 @@ export default function LoginScreen() {
               styles.card,
               index === 0 && styles.cardMesa,
               index === 0 && { backgroundColor: "#8ab3ad" },
+              index === 2 && { backgroundColor: "#4f7e68" },
               index === 1 && { backgroundColor: "#cf7555" },
               index === 3 && { height: 100, width: "98%" },
             ]}
@@ -59,7 +54,7 @@ export default function LoginScreen() {
             {index === 0 && (
               <View style={{ flex: 1, width: "100%", padding: 25 }}>
                 <Text style={[styles.title, { fontSize: 45, lineHeight: 45 }]}>
-                  NEW {"\n"}TABLE
+                  NUEVA {"\n"}MESA
                 </Text>
                 <Image
                   source={require("../../assets/images/rueda.png")}
@@ -68,9 +63,9 @@ export default function LoginScreen() {
               </View>
             )}
             {index === 1 && (
-              <View style={{ flex: 1, width: "100%", padding: 25 }}>
+              <View style={{ flex: 1, width: "100%", padding: 15 }}>
                 <Text style={[styles.title, { fontSize: 30, lineHeight: 30 }]}>
-                  JOIN {"\n"}TABLE
+                  BUSCAR{"\n"}MESA
                 </Text>
                 <Image
                   source={require("../../assets/images/jarras.png")}
@@ -80,8 +75,6 @@ export default function LoginScreen() {
             )}
             {index === 2 && (
               <View style={{ flex: 1, width: "100%", padding: 15 }}>
-                {/* Bajamos el padding a 15 para dar más aire al texto */}
-
                 <View
                   style={{
                     width: "100%",
@@ -104,7 +97,7 @@ export default function LoginScreen() {
                       },
                     ]}
                   >
-                    FRIENDS
+                    AMIGOS
                   </Text>
                 </View>
 
@@ -112,6 +105,16 @@ export default function LoginScreen() {
                   <Image
                     source={require("../../assets/images/romano.png")}
                     style={styles.romanImage}
+                  />
+                  <View
+                    style={{
+                      position: "absolute",
+                      backgroundColor: "white",
+                      width: 40,
+                      height: 90,
+                      left: -10,
+                      top: 150,
+                    }}
                   />
                   <Image
                     source={require("../../assets/images/pancarta.png")}

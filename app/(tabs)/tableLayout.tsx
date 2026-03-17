@@ -1,19 +1,20 @@
+import Pfp from "@/components/Pfp";
+import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
+import { usePathname, useRouter } from "expo-router";
+import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
   Image,
-  ScrollView,
-  TouchableOpacity,
   Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
   TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { usePathname, useRouter } from "expo-router";
-import * as Clipboard from "expo-clipboard";
-import { db, auth } from "../../firebase";
-import { doc, updateDoc, getDoc, onSnapshot } from "firebase/firestore";
+import { auth, db } from "../../firebase";
 
 export default function TableLayoutScreen() {
   const router = useRouter();
@@ -43,6 +44,23 @@ export default function TableLayoutScreen() {
     { id: 5, name: "Montadito 88", status: "Servido" },
     { id: 6, name: "Nachos", status: "En cocina" },
   ]);
+  const [friendsData, setFriendsData] = useState([
+    { id: "hdjkwndklajsdklaskld", pfp: 5, name: "Montadito 88" },
+    { id: "dklenbflndiwmwqddwaw", pfp: 6, name: "Nachos" },
+  ]);
+
+  const appendFriendData = (newFriend: {
+    id: string;
+    pfp: number;
+    name: string;
+  }) => {
+    setFriendsData(
+      (prevFriends: { id: string; pfp: number; name: string }[]) => [
+        ...prevFriends,
+        newFriend,
+      ],
+    );
+  };
 
   const sendToast = (msg: string) => {
     setToastMsg(msg);
@@ -106,28 +124,38 @@ export default function TableLayoutScreen() {
             unsubscribeMesa();
           }
 
-          unsubscribeMesa = onSnapshot(doc(db, "mesas", mesaId), (mesaSnap) => {
-            if (mesaSnap.exists()) {
-              const data = mesaSnap.data();
-              console.log("Datos de la mesa actualizados:", data.nombre);
+          unsubscribeMesa = onSnapshot(
+            doc(db, "mesas", mesaId),
+            async (mesaSnap) => {
+              if (mesaSnap.exists()) {
+                const data = mesaSnap.data();
+                setNombreMesa(data.nombre || "Mesa sin nombre");
+                setCodigoMesa(mesaId);
 
-              setNombreMesa(data.nombre || "Mesa sin nombre");
-              setCodigoMesa(mesaId);
+                const usuariosActivos = data.usuariosActivos || [];
 
-              if (data.creadorId === user.uid) {
-                setCloseVisible(true);
-              } else {
-                setCloseVisible(false);
+                try {
+                  const promesas = usuariosActivos.map(async (id: string) => {
+                    const uData = await userData(id);
+                    return {
+                      id: id,
+                      pfp: uData?.pfp || 0,
+                      name: uData?.nombre || "Sin nombre",
+                    };
+                  });
+
+                  const listaActualizada = await Promise.all(promesas);
+
+                  setFriendsData(listaActualizada);
+                } catch (error) {
+                  console.error("Error cargando amigos:", error);
+                }
+
+                setCloseVisible(data.creadorId === user.uid);
+                setInactivoVisible(!data.activo);
               }
-              if (!data.activo) {
-                setInactivoVisible(true);
-              } else {
-                setInactivoVisible(false);
-              }
-            } else {
-              console.log("La mesa ya no existe en la base de datos");
-            }
-          });
+            },
+          );
         } else {
           console.log("El usuario ya no tiene mesa asignada. Redirigiendo...");
           router.replace("/main");
@@ -177,6 +205,21 @@ export default function TableLayoutScreen() {
       });
     } catch (error) {
       console.error(`Error cerrando la mesa: `, error);
+    }
+  };
+
+  const userData = async (idUsuario: string) => {
+    try {
+      const userSnap = await getDoc(doc(db, "usuarios", idUsuario));
+      if (userSnap.exists()) {
+        return userSnap.data();
+      } else {
+        console.error("No se encontró el usuario con ID:", idUsuario);
+        return null;
+      }
+    } catch (error) {
+      console.error("Error obteniendo datos del usuario:", error);
+      return null;
     }
   };
 
@@ -258,6 +301,31 @@ export default function TableLayoutScreen() {
               </View>
             ))}
           </View>
+        </View>
+        <View style={styles.historySection}>
+          <Text style={styles.columnTitle}>AMIGOS</Text>
+          <ScrollView
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.friendsList}
+          >
+            <View style={styles.historySection}>
+              <ScrollView
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.friendsList}
+              >
+                {friendsData.map((friend) => (
+                  <View key={friend.id} style={styles.friendCard}>
+                    <Pfp pfp={3} color={2} />
+                    <Text style={styles.friendName} numberOfLines={1}>
+                      {friend.name}
+                    </Text>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          </ScrollView>
         </View>
         <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
           {isCloseVisible && (
@@ -461,7 +529,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  // HISTORIAL
   historySection: { marginBottom: 30 },
   historyBox: {
     backgroundColor: "#fff",
@@ -477,6 +544,37 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   historyText: { color: "#888", textDecorationLine: "line-through" },
+  friendsList: {
+    paddingVertical: 10,
+  },
+  friendCard: {
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    padding: 12,
+    marginRight: 15, // Espacio entre tarjetas
+    borderWidth: 1,
+    borderColor: "#ddd",
+    alignItems: "center", // Centra el contenido
+    width: 100, // Ancho fijo para que se vea el scroll
+    // Sombra suave (opcional)
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#e1e1e1", // Color de fondo si no hay imagen
+    marginBottom: 8,
+  },
+  friendName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    textAlign: "center",
+  },
   statusBadge: {
     backgroundColor: "#f0f0f0",
     paddingHorizontal: 8,

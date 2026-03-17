@@ -1,28 +1,28 @@
+import Pfp from "@/components/Pfp";
+import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
+import { useRouter } from "expo-router";
+import { onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
   Image,
   ScrollView,
+  StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { db, auth } from "../../firebase";
-import { useRouter } from "expo-router";
-import * as Clipboard from "expo-clipboard";
-import { onSnapshot } from "firebase/firestore";
+import { auth, db } from "../../firebase";
 
 import {
-  collection,
-  query,
-  where,
-  getDoc,
-  getDocs,
-  updateDoc,
-  doc,
   arrayUnion,
+  collection,
+  doc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
 } from "firebase/firestore";
 
 interface Usuario {
@@ -32,6 +32,8 @@ interface Usuario {
   codigoUnico: string;
   friendRequests?: string[];
   friends?: string[];
+  pfp: number;
+  color: number;
 }
 
 export default function friendsScreen() {
@@ -298,15 +300,8 @@ export default function friendsScreen() {
             fullFriends.map((friend) => (
               <View key={friend.codigoUnico} style={styles.friendCard}>
                 <View style={styles.userInfo}>
-                  <View
-                    style={[
-                      styles.avatarPlaceholder,
-                      { backgroundColor: "#cf7555" },
-                    ]}
-                  >
-                    <Text style={styles.avatarText}>
-                      {friend.nombre.charAt(0)}
-                    </Text>
+                  <View style={{ paddingRight: 10 }}>
+                    <Pfp pfp={friend.pfp} color={friend.color} />
                   </View>
                   <View>
                     <Text style={styles.requestName}>{friend.nombre}</Text>

@@ -1,18 +1,18 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
   Image,
   ScrollView,
+  StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { db, auth } from "../../firebase";
-import { collection, doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { useRouter } from "expo-router";
+import { auth, db } from "../../firebase";
 
 const guardarUsuario = async (
   uid: string,
@@ -34,6 +34,8 @@ const guardarUsuario = async (
       fechaRegistro: serverTimestamp(),
       table: null,
       activo: true,
+      pfp: 0,
+      color: 0,
     });
 
     console.log("¡Datos guardados en Firestore!");

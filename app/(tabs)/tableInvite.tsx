@@ -1,34 +1,35 @@
-import { useEffect, useState } from "react";
+import Pfp from "@/components/Pfp";
+import { usePathname, useRouter } from "expo-router";
 import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
-import { db, auth } from "../../firebase";
-import { useRouter } from "expo-router";
-import {
+  addDoc,
+  arrayUnion,
   collection,
-  query,
-  where,
+  doc,
   getDoc,
   getDocs,
-  doc,
-  setDoc,
-  updateDoc,
-  arrayUnion,
-  addDoc,
-  serverTimestamp,
   onSnapshot,
+  query,
+  serverTimestamp,
+  updateDoc,
+  where,
 } from "firebase/firestore";
-import { usePathname } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { auth, db } from "../../firebase";
 
 interface Usuario {
   id: string;
   nombre: string;
   codigoUnico: string;
+  pfp: number;
+  color: number;
 }
 
 export default function TableInviteScreen() {
@@ -182,23 +183,7 @@ export default function TableInviteScreen() {
                   isSelected && styles.friendCardSelected,
                 ]}
               >
-                <View
-                  style={[
-                    styles.avatarPlaceholder,
-                    isSelected
-                      ? { backgroundColor: "#fff" }
-                      : { backgroundColor: "#cf7555" },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.avatarText,
-                      isSelected && { color: "#cb464a" },
-                    ]}
-                  >
-                    {friend.nombre.charAt(0)}
-                  </Text>
-                </View>
+                <Pfp pfp={friend.pfp} color={friend.color} />
                 <Text
                   numberOfLines={1}
                   style={[styles.friendName, isSelected && { color: "#fff" }]}
