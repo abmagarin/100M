@@ -36,7 +36,7 @@ export default function Header() {
       setLoading(false);
     });
 
-    return () => unsubscribe(); // Limpiamos el escucha
+    return () => unsubscribe();
   }, []);
 
   return (

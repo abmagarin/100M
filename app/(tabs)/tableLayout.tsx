@@ -45,20 +45,20 @@ export default function TableLayoutScreen() {
     { id: 6, name: "Nachos", status: "En cocina" },
   ]);
   const [friendsData, setFriendsData] = useState([
-    { id: "hdjkwndklajsdklaskld", pfp: 5, name: "Montadito 88" },
-    { id: "dklenbflndiwmwqddwaw", pfp: 6, name: "Nachos" },
+    { id: "hdjkwndklajsdklaskld", pfp: 5, name: "Montadito 88", color: 2 },
+    { id: "dklenbflndiwmwqddwaw", pfp: 6, name: "Nachos", color: 2 },
   ]);
 
   const appendFriendData = (newFriend: {
     id: string;
     pfp: number;
     name: string;
+    color: number;
   }) => {
     setFriendsData(
-      (prevFriends: { id: string; pfp: number; name: string }[]) => [
-        ...prevFriends,
-        newFriend,
-      ],
+      (
+        prevFriends: { id: string; pfp: number; name: string; color: number }[],
+      ) => [...prevFriends, newFriend],
     );
   };
 
@@ -141,6 +141,7 @@ export default function TableLayoutScreen() {
                       id: id,
                       pfp: uData?.pfp || 0,
                       name: uData?.nombre || "Sin nombre",
+                      color: uData?.color || 2,
                     };
                   });
 
@@ -317,7 +318,7 @@ export default function TableLayoutScreen() {
               >
                 {friendsData.map((friend) => (
                   <View key={friend.id} style={styles.friendCard}>
-                    <Pfp pfp={3} color={2} />
+                    <Pfp pfp={friend.pfp} color={friend.color} />
                     <Text style={styles.friendName} numberOfLines={1}>
                       {friend.name}
                     </Text>

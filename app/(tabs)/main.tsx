@@ -37,7 +37,7 @@ export default function LoginScreen() {
     >
       <Header />
       <View style={styles.gridContainer}>
-        {[1, 2, 3, 4, 5, 6, 7].map((item, index) => (
+        {[1, 2, 3, 4].map((item, index) => (
           <TouchableOpacity
             key={item}
             style={[
