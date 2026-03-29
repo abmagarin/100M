@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth"; // Importación clave
 import { doc, getDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 
 export default function Header() {
   const router = useRouter();
@@ -56,15 +56,15 @@ export default function Header() {
         >
           {loading ? "Cargando..." : displayNombre}
         </Text>
-        <TouchableOpacity onPress={() => router.push("/perfil")}>
-          <Pfp
-            pfp={pfp}
-            color={color}
-            style={{
-              transform: [{ scale: 0.8 }],
-            }}
-          />
-        </TouchableOpacity>
+        {/*<TouchableOpacity onPress={() => router.push("/perfil")}>*/}
+        <Pfp
+          pfp={pfp}
+          color={color}
+          style={{
+            transform: [{ scale: 0.8 }],
+          }}
+        />
+        {/*</TouchableOpacity>*/}
       </View>
     </View>
   );
