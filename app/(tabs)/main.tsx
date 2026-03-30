@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import Header from "../../components/Header";
+//import { inicializarCartaCompleta } from "../../utils/bulkupload";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -27,7 +28,7 @@ export default function LoginScreen() {
   };
 
   /*useEffect(() => {
-    inicializarCartaCompleta(); 
+    inicializarCartaCompleta();
   }, []);*/
 
   return (
@@ -153,7 +154,7 @@ export default function LoginScreen() {
                       },
                     ]}
                   >
-                    ANNOUNCE
+                    CONVOCAR
                   </Text>
                 </View>
               </View>

@@ -71,7 +71,7 @@ const PFP_CONFIG: Record<
     source: require("../assets/images/pfp/3.png"),
     offsetTop: 10,
     offsetLeft: 10,
-    scale: 2.5,
+    scale: 2,
   },
 };
 

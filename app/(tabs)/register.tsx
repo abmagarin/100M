@@ -103,7 +103,7 @@ export default function RegisterScreen() {
       // Pasamos el UID (identificador único) que nos da Firebase
       await guardarUsuario(user.uid, nombre, email, codigoUnico);
 
-      router.replace("/login");
+      router.navigate("/login");
     } catch (err: any) {
       // Manejo de errores específicos de Firebase
       if (err.code === "auth/email-already-in-use") {

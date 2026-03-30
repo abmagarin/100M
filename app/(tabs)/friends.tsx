@@ -227,12 +227,12 @@ export default function friendsScreen() {
           </TouchableOpacity>
         </View>
         <View style={styles.form}>
-          <Text style={styles.title}>FRIEND REQUESTS</Text>
+          <Text style={styles.title}>ENVIA SOLICITUD</Text>
 
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.innerInput}
-              placeholder="Friend's Code"
+              placeholder="Codigo de amigo"
               placeholderTextColor="#878787"
               value={friendCode}
               onChangeText={(text) => setFriendCode(text.toUpperCase())}
@@ -250,19 +250,17 @@ export default function friendsScreen() {
         </View>
         <View style={styles.requestsSection}>
           <Text style={styles.title}>
-            Pending Requests ({fullRequests.length})
+            Solicitudes pendientes ({fullRequests.length})
           </Text>
 
           {fullRequests.length === 0 ? (
-            <Text style={styles.noRequests}>No pending requests</Text>
+            <Text style={styles.noRequests}>No hay solicitudes pendientes</Text>
           ) : (
             fullRequests.map((reqUser) => (
               <View key={reqUser.codigoUnico} style={styles.requestCard}>
                 <View style={styles.userInfo}>
                   <View style={styles.avatarPlaceholder}>
-                    <Text style={styles.avatarText}>
-                      {reqUser.nombre.charAt(0)}
-                    </Text>
+                    <Pfp pfp={reqUser.pfp} color={reqUser.color} />
                   </View>
                   <View>
                     <Text style={styles.requestName}>{reqUser.nombre}</Text>
@@ -291,7 +289,7 @@ export default function friendsScreen() {
           )}
 
           <View style={styles.friendsTitleSection}>
-            <Text style={styles.title}>MY FRIENDS ({fullFriends.length})</Text>
+            <Text style={styles.title}>MIS AMIGOS ({fullFriends.length})</Text>
           </View>
 
           {fullFriends.length === 0 ? (

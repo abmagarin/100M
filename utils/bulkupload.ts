@@ -1,438 +1,488 @@
-import { db } from "../firebase";
 import { doc, setDoc } from "firebase/firestore";
+import { db } from "../firebase";
 
 export const inicializarCartaCompleta = async () => {
   const montaditos = [
-    // 01 - 10: DE LA CASA
+    // --- DE LA CASA ---
     {
       id: "1",
-      Categoria: "DeLaCasa",
-      Nombre: "Jamón Gran Reserva y aceite de oliva virgen extra",
+      Categoria: "De la casa",
+      Nombre: "Jamón Gran Reserva y aceite de oliva",
     },
-    { id: "2", Categoria: "DeLaCasa", Nombre: "Oreja en salsa picantona" },
-    { id: "3", Categoria: "DeLaCasa", Nombre: "Tortilla de chorizo" },
-    { id: "4", Categoria: "DeLaCasa", Nombre: "Carrillera al vino tinto" },
-    { id: "5", Categoria: "DeLaCasa", Nombre: "Tortilla de patatas" },
-    { id: "6", Categoria: "DeLaCasa", Nombre: "Pollo kebab y salsa BBQ" },
-    { id: "7", Categoria: "DeLaCasa", Nombre: "Pollo y salsa alioli" },
-    { id: "8", Categoria: "DeLaCasa", Nombre: "Lomo al ajillo" },
-    { id: "9", Categoria: "DeLaCasa", Nombre: "Chistorra y salsa brava" },
-    { id: "10", Categoria: "DeLaCasa", Nombre: "Pulled Pork BBQ" },
+    {
+      id: "2",
+      Categoria: "De la casa",
+      Nombre: "Tortilla de patatas y tomate",
+    },
+    { id: "3", Categoria: "De la casa", Nombre: "Pulled pork BBQ" },
+    { id: "4", Categoria: "De la casa", Nombre: "Pollo y salsa alioli" },
+    { id: "5", Categoria: "De la casa", Nombre: "Carrillera al vino tinto" },
+    { id: "6", Categoria: "De la casa", Nombre: "Calamarcitos y mayonesa" },
+    { id: "7", Categoria: "De la casa", Nombre: "Pollo kebab y salsa BBQ" },
+    {
+      id: "8",
+      Categoria: "De la casa",
+      Nombre: "Bacon ahumado y queso madurado",
+    },
+    { id: "9", Categoria: "De la casa", Nombre: "Torreznos y salsa brava" },
+    {
+      id: "10",
+      Categoria: "De la casa",
+      Nombre: "Lomo al ajillo y salsa 100M",
+    },
 
-    // 11 - 20: IMPRESCINDIBLE
+    // --- CLÁSICOS ---
     {
       id: "11",
-      Categoria: "Imprescindible",
-      Nombre: "Crema de queso Camembert, cebolla caramelizada y bacon ahumado",
+      Categoria: "Clásicos",
+      Nombre: "Tortilla de patatas y queso madurado",
     },
     {
       id: "12",
-      Categoria: "Imprescindible",
-      Nombre: "Tortilla de patatas y mayonesa",
+      Categoria: "Clásicos",
+      Nombre: "Tortilla de patatas, bacon ahumado y salsa alioli",
     },
     {
       id: "13",
-      Categoria: "Imprescindible",
-      Nombre: "Tortilla de patatas y salsa alioli",
+      Categoria: "Clásicos",
+      Nombre: "Tortilla de patatas, tomate y mayonesa",
     },
     {
       id: "14",
-      Categoria: "Imprescindible",
+      Categoria: "Clásicos",
       Nombre: "Tortilla de patatas y mojo picón",
     },
     {
       id: "15",
-      Categoria: "Imprescindible",
-      Nombre: "Tortilla de patatas y salsa brava",
+      Categoria: "Clásicos",
+      Nombre: "Tortilla de patatas, patatas paja y salsa 100M",
     },
     {
       id: "16",
-      Categoria: "Imprescindible",
-      Nombre: "Tortilla de patatas, pimiento rojo y mayonesa",
+      Categoria: "Clásicos",
+      Nombre: "Tortilla de patatas, cebolla crujiente y salsa BBQ",
     },
-    { id: "17", Categoria: "Imprescindible", Nombre: "Atún y salsa alioli" },
-    {
-      id: "18",
-      Categoria: "Imprescindible",
-      Nombre: "Atún, lechuga y mayonesa",
-    },
+    { id: "17", Categoria: "Clásicos", Nombre: "Pollo y queso madurado" },
+    { id: "18", Categoria: "Clásicos", Nombre: "Pollo, tomate y mojo picón" },
     {
       id: "19",
-      Categoria: "Imprescindible",
-      Nombre: "Atún, pimiento rojo y mayonesa",
+      Categoria: "Clásicos",
+      Nombre: "Pollo, patatas paja y salsa de mostaza y miel",
     },
     {
       id: "20",
-      Categoria: "Imprescindible",
-      Nombre: "Atún, lechuga y salsa César",
+      Categoria: "Clásicos",
+      Nombre: "Pollo, bacon ahumado y mayonesa",
     },
-
-    // 21 - 60: CLÁSICOS (Resumen de los principales según tu imagen)
     {
       id: "21",
       Categoria: "Clásicos",
-      Nombre: "Pulled pork BBQ y salsa cheddar",
+      Nombre: "Pollo, patatas paja y salsa BBQ",
     },
+    { id: "22", Categoria: "Clásicos", Nombre: "Pollo kebab y tomate" },
+    { id: "23", Categoria: "Clásicos", Nombre: "Pollo kebab y salsa cheddar" },
     {
-      id: "22",
+      id: "24",
       Categoria: "Clásicos",
-      Nombre: "Pulled pork BBQ, cebolla crujiente y salsa brava",
+      Nombre: "Pollo kebab, tomate y salsa 100M",
     },
-    {
-      id: "23",
-      Categoria: "Clásicos",
-      Nombre: "Pulled pork y cebolla caramelizada",
-    },
-    { id: "24", Categoria: "Clásicos", Nombre: "Torreznos y guacamole" },
     {
       id: "25",
       Categoria: "Clásicos",
-      Nombre: "Torreznos, patatas paja y salsa brava",
+      Nombre: "Pollo kebab, patatas paja y salsa BBQ",
     },
     {
       id: "26",
       Categoria: "Clásicos",
-      Nombre: "Crema de queso Camembert y carrillera al vino tinto",
+      Nombre: "Pollo kebab, bacon ahumado y mayonesa",
     },
+
+    // --- IMPRESCINDIBLES ---
     {
       id: "27",
-      Categoria: "Clásicos",
-      Nombre: "Crema de queso Camembert y pollo kebab",
+      Categoria: "Imprescindibles",
+      Nombre: "Pulled pork BBQ y salsa cheddar",
     },
     {
       id: "28",
-      Categoria: "Clásicos",
-      Nombre: "Crema de queso Camembert y pulled pork BBQ",
+      Categoria: "Imprescindibles",
+      Nombre: "Pulled pork BBQ y bacon ahumado",
     },
     {
       id: "29",
-      Categoria: "Clásicos",
-      Nombre: "Crema de queso Camembert y chistorra",
+      Categoria: "Imprescindibles",
+      Nombre: "Pulled pork BBQ y salsa brava",
     },
     {
       id: "30",
-      Categoria: "Clásicos",
-      Nombre: "Chistorra, patatas paja y salsa brava",
+      Categoria: "Imprescindibles",
+      Nombre: "Pulled pork BBQ y patatas paja",
     },
     {
       id: "31",
-      Categoria: "Clásicos",
-      Nombre: "Chistorra, cebolla crujiente y mayonesa",
+      Categoria: "Imprescindibles",
+      Nombre: "Pulled pork BBQ y cebolla crujiente",
     },
-    { id: "32", Categoria: "Clásicos", Nombre: "Chistorra y salsa cheddar" },
     {
-      id: "33",
-      Categoria: "Clásicos",
-      Nombre: "Chistorra, cebolla caramelizada y salsa alioli",
-    },
-    { id: "34", Categoria: "Clásicos", Nombre: "Lomo al ajillo y salsa 100M" },
-    {
-      id: "35",
-      Categoria: "Clásicos",
+      id: "32",
+      Categoria: "Imprescindibles",
       Nombre: "Lomo al ajillo y queso madurado",
     },
     {
+      id: "33",
+      Categoria: "Imprescindibles",
+      Nombre: "Lomo al ajillo y queso gorgonzola",
+    },
+    {
+      id: "34",
+      Categoria: "Imprescindibles",
+      Nombre: "Lomo al ajillo y mojo picón",
+    },
+    {
+      id: "35",
+      Categoria: "Imprescindibles",
+      Nombre: "Lomo al ajillo, tomate y patatas paja",
+    },
+    {
       id: "36",
-      Categoria: "Clásicos",
-      Nombre: "Lomo al ajillo, lechuga y mayonesa",
+      Categoria: "Imprescindibles",
+      Nombre: "Lomo al ajillo, tomate y mayonesa",
     },
     {
       id: "37",
-      Categoria: "Clásicos",
-      Nombre: "Lomo al ajillo, patatas paja y salsa alioli",
+      Categoria: "Imprescindibles",
+      Nombre: "Lomo al ajillo, bacon ahumado y salsa alioli",
     },
     {
       id: "38",
-      Categoria: "Clásicos",
-      Nombre: "Lomo al ajillo, crema de queso Camembert y pimiento rojo",
+      Categoria: "Imprescindibles",
+      Nombre: "Calamarcitos y salsa alioli",
     },
     {
       id: "39",
-      Categoria: "Clásicos",
-      Nombre: "Lomo al ajillo, pimiento rojo, lechuga y mayonesa",
+      Categoria: "Imprescindibles",
+      Nombre: "Calamarcitos y salsa 100M",
     },
     {
       id: "40",
-      Categoria: "Clásicos",
-      Nombre: "Oreja en salsa picantona y cebolla crujiente",
+      Categoria: "Imprescindibles",
+      Nombre: "Calamarcitos y guacamole",
     },
     {
       id: "41",
-      Categoria: "Clásicos",
-      Nombre: "Oreja en salsa picantona y salsa alioli",
+      Categoria: "Imprescindibles",
+      Nombre: "Calamarcitos, salsa brava y mayonesa",
     },
     {
       id: "42",
-      Categoria: "Clásicos",
-      Nombre: "Oreja en salsa picantona, salsa brava y mayonesa",
+      Categoria: "Imprescindibles",
+      Nombre: "Calamarcitos, tomate y mayonesa",
     },
     {
       id: "43",
-      Categoria: "Clásicos",
-      Nombre: "Oreja en salsa picantona, patatas paja y mojo picón",
+      Categoria: "Imprescindibles",
+      Nombre: "Bacon ahumado, tomate y mayonesa",
     },
     {
       id: "44",
-      Categoria: "Clásicos",
-      Nombre: "Pollo, cebolla crujiente y salsa BBQ",
+      Categoria: "Imprescindibles",
+      Nombre: "Bacon ahumado, cebolla crujiente y salsa 100M",
     },
     {
       id: "45",
-      Categoria: "Clásicos",
-      Nombre: "Pollo, cebolla crujiente y salsa alioli",
+      Categoria: "Imprescindibles",
+      Nombre: "Bacon ahumado, tomate y queso gorgonzola",
     },
     {
       id: "46",
-      Categoria: "Clásicos",
-      Nombre: "Pollo, pimiento rojo y mayonesa",
+      Categoria: "Imprescindibles",
+      Nombre: "Bacon ahumado, patatas paja y mayonesa",
     },
     {
       id: "47",
-      Categoria: "Clásicos",
-      Nombre: "Carrillera al vino tinto y mayonesa",
+      Categoria: "Imprescindibles",
+      Nombre: "Bacon ahumado, tomate y queso madurado",
     },
+
+    // --- ESPECIALES ---
     {
       id: "48",
-      Categoria: "Clásicos",
-      Nombre: "Carrillera al vino tinto y salsa alioli",
+      Categoria: "Especiales",
+      Nombre: "Jamón Gran Reserva y mantequilla",
     },
     {
       id: "49",
-      Categoria: "Clásicos",
-      Nombre: "Carrillera al vino tinto, patatas paja y mojo picón",
+      Categoria: "Especiales",
+      Nombre: "Jamón Gran Reserva y tomate",
     },
     {
       id: "50",
-      Categoria: "Clásicos",
-      Nombre: "Carrillera al vino tinto y salsa brava",
+      Categoria: "Especiales",
+      Nombre: "Jamón Gran Reserva, tomate y patatas paja",
     },
     {
       id: "51",
-      Categoria: "Clásicos",
-      Nombre: "Carrillera al vino tinto, patatas paja y salsa alioli",
-    },
-    { id: "52", Categoria: "Clásicos", Nombre: "Pollo kebab y salsa 100M" },
-    {
-      id: "53",
-      Categoria: "Clásicos",
-      Nombre: "Pollo kebab, patatas paja y mojo picón",
-    },
-    {
-      id: "54",
-      Categoria: "Clásicos",
-      Nombre: "Pollo kebab, pimiento rojo y salsa alioli",
-    },
-    {
-      id: "55",
-      Categoria: "Clásicos",
-      Nombre: "Pollo kebab, cebolla caramelizada y salsa de mostaza y miel",
-    },
-    {
-      id: "56",
-      Categoria: "Clásicos",
-      Nombre: "Pollo kebab, lechuga y salsa César",
-    },
-    { id: "57", Categoria: "Clásicos", Nombre: "Rabas de calamar y mayonesa" },
-    {
-      id: "58",
-      Categoria: "Clásicos",
-      Nombre: "Rabas de calamar, lechuga y salsa alioli",
-    },
-    {
-      id: "59",
-      Categoria: "Clásicos",
-      Nombre: "Rabas de calamar y salsa César",
-    },
-    {
-      id: "60",
-      Categoria: "Clásicos",
-      Nombre: "Rabas de calamar y salsa bravioli",
-    },
-
-    // 61 - 80: ESPECIALES
-    {
-      id: "61",
-      Categoria: "Especiales",
-      Nombre: "Tortilla de chorizo y salsa alioli",
-    },
-    {
-      id: "62",
-      Categoria: "Especiales",
-      Nombre: "Tortilla de chorizo y salsa brava",
-    },
-    {
-      id: "63",
-      Categoria: "Especiales",
-      Nombre: "Tortilla de chorizo y queso madurado",
-    },
-    {
-      id: "64",
-      Categoria: "Especiales",
-      Nombre: "Tortilla de chorizo y mojo picón",
-    },
-    {
-      id: "65",
-      Categoria: "Especiales",
-      Nombre: "Jamón Gran Reserva y queso madurado",
-    },
-    {
-      id: "66",
       Categoria: "Especiales",
       Nombre: "Jamón Gran Reserva y tortilla de patatas",
     },
     {
-      id: "67",
+      id: "52",
       Categoria: "Especiales",
-      Nombre: "Jamón Gran Reserva, aceite de oliva virgen extra y patatas paja",
+      Nombre: "Carrillera al vino tinto y salsa alioli",
     },
     {
-      id: "68",
+      id: "53",
       Categoria: "Especiales",
-      Nombre: "Jamón Gran Reserva, pimiento rojo y queso madurado",
+      Nombre: "Carrillera al vino tinto y patatas paja",
+    },
+    {
+      id: "54",
+      Categoria: "Especiales",
+      Nombre: "Carrillera al vino tinto y tomate",
+    },
+    {
+      id: "55",
+      Categoria: "Especiales",
+      Nombre: "Carrillera al vino tinto y cebolla crujiente",
+    },
+    {
+      id: "56",
+      Categoria: "Especiales",
+      Nombre: "Carrillera al vino tinto y bacon ahumado",
+    },
+    { id: "57", Categoria: "Especiales", Nombre: "Torreznos y mayonesa" },
+    { id: "58", Categoria: "Especiales", Nombre: "Torreznos y salsa alioli" },
+    { id: "59", Categoria: "Especiales", Nombre: "Torreznos y salsa 100M" },
+    {
+      id: "60",
+      Categoria: "Especiales",
+      Nombre: "Salmón ahumado y queso gorgonzola",
+    },
+    { id: "61", Categoria: "Especiales", Nombre: "Salmón ahumado y tomate" },
+    {
+      id: "62",
+      Categoria: "Especiales",
+      Nombre: "Salmón ahumado y salsa de mostaza y miel",
+    },
+    { id: "63", Categoria: "Especiales", Nombre: "Salmón ahumado y guacamole" },
+    {
+      id: "64",
+      Categoria: "Especiales",
+      Nombre: "Chorizo parrillero y salsa brava",
+    },
+    {
+      id: "65",
+      Categoria: "Especiales",
+      Nombre: "Chorizo parrillero y queso gorgonzola",
+    },
+    {
+      id: "66",
+      Categoria: "Especiales",
+      Nombre: "Chorizo parrillero y salsa BBQ",
+    },
+    {
+      id: "67",
+      Categoria: "Especiales",
+      Nombre: "Chorizo parrillero y guacamole",
+    },
+
+    // --- MONTYCOOKIE ---
+    {
+      id: "68",
+      Categoria: "MontyCookie",
+      Nombre: "Montycookie doble chocolate y sirope de caramelo toffee",
     },
     {
       id: "69",
-      Categoria: "Especiales",
-      Nombre: "Salmón ahumado y crema de queso Camembert",
+      Categoria: "MontyCookie",
+      Nombre: "Montycookie chocolate y sirope de pistacho",
     },
     {
       id: "70",
-      Categoria: "Especiales",
-      Nombre: "Salmón ahumado, lechuga y salsa César",
+      Categoria: "MontyCookie",
+      Nombre: "Montycookie chocolate y sirope de chocolate",
     },
+
+    // --- MONTYDINAS ---
     {
       id: "71",
-      Categoria: "Especiales",
-      Nombre: "Torreznos, guacamole y salsa alioli",
+      Categoria: "MontyDinas",
+      Nombre: "Piadina de jamón cocido y queso mozzarella",
     },
     {
       id: "72",
-      Categoria: "Especiales",
-      Nombre: "Torreznos, cebolla crujiente y mojo picón",
+      Categoria: "MontyDinas",
+      Nombre: "Piadina de pepperoni y queso mozzarella",
     },
-    { id: "73", Categoria: "Especiales", Nombre: "Torreznos y salsa bravioli" },
-    { id: "74", Categoria: "Especiales", Nombre: "Ensaladilla rusa" },
-    { id: "75", Categoria: "Especiales", Nombre: "Ensaladilla rusa y atún" },
+    {
+      id: "73",
+      Categoria: "MontyDinas",
+      Nombre: "Piadina de pollo, tomate, queso mozzarella y orégano",
+    },
+    {
+      id: "74",
+      Categoria: "MontyDinas",
+      Nombre: "Piadina de jamón Gran Reserva, queso mozzarella y orégano",
+    },
+    {
+      id: "75",
+      Categoria: "MontyDinas",
+      Nombre: "Piadina de jamón cocido, queso madurado y tomate",
+    },
+
+    // --- MONTYPERROS ---
     {
       id: "76",
-      Categoria: "Especiales",
-      Nombre: "Ensaladilla rusa y pimiento rojo",
-    },
-    {
-      id: "77",
-      Categoria: "Especiales",
-      Nombre: "Ensaladilla rusa y salsa brava",
-    },
-    {
-      id: "78",
-      Categoria: "Especiales",
-      Nombre: "Ensaladilla rusa y patatas paja",
-    },
-    { id: "79", Categoria: "Especiales", Nombre: "Crema de chocolate" },
-    { id: "80", Categoria: "Especiales", Nombre: "Crema de black cookies" },
-
-    // 81 - 85: MONTYTACOS
-    { id: "81", Categoria: "MontyTacos", Nombre: "Mozzamix" },
-    { id: "82", Categoria: "MontyTacos", Nombre: "Mozzamix y pulled pork BBQ" },
-    { id: "83", Categoria: "MontyTacos", Nombre: "Mozzamix y bacon ahumado" },
-    { id: "84", Categoria: "MontyTacos", Nombre: "Mozzamix y chistorra" },
-    { id: "85", Categoria: "MontyTacos", Nombre: "Mozzamix y lomo al ajillo" },
-
-    // 86 - 90: MONTYPERROS
-    {
-      id: "86",
-      Categoria: "MontyPerros",
-      Nombre: "Hot dog, kétchup y mostaza",
-    },
-    {
-      id: "87",
-      Categoria: "MontyPerros",
-      Nombre: "Hot dog, salsa BBQ y cebolla crujiente",
-    },
-    {
-      id: "88",
-      Categoria: "MontyPerros",
-      Nombre: "Hot dog, cebolla crujiente, salsa cheddar y mojo picón",
-    },
-    {
-      id: "89",
       Categoria: "MontyPerros",
       Nombre: "Hot dog, kétchup y mayonesa",
     },
     {
-      id: "90",
+      id: "77",
       Categoria: "MontyPerros",
-      Nombre: "Hot dog y salsa de mostaza y miel",
+      Nombre: "Hot dog, cebolla crujiente y mojo picón",
+    },
+    {
+      id: "78",
+      Categoria: "MontyPerros",
+      Nombre: "Hot dog, guacamole y salsa cheddar",
+    },
+    {
+      id: "79",
+      Categoria: "MontyPerros",
+      Nombre: "Hot dog, patatas paja y salsa alioli",
+    },
+    {
+      id: "80",
+      Categoria: "MontyPerros",
+      Nombre: "Hot dog, cebolla crujiente y salsa 100M",
     },
 
-    // 91 - 95: MONTYBURGERS
+    // --- MONTYBURGERS ---
+    {
+      id: "81",
+      Categoria: "MontyBurgers",
+      Nombre: "Burger, queso madurado, tomate y mayonesa",
+    },
+    {
+      id: "82",
+      Categoria: "MontyBurgers",
+      Nombre: "Burger, queso madurado y mojo picón",
+    },
+    {
+      id: "83",
+      Categoria: "MontyBurgers",
+      Nombre: "Burger, guacamole y bacon ahumado",
+    },
+    {
+      id: "84",
+      Categoria: "MontyBurgers",
+      Nombre: "Burger, bacon ahumado y salsa cheddar",
+    },
+    {
+      id: "85",
+      Categoria: "MontyBurgers",
+      Nombre: "Burger, queso madurado y pepperoni",
+    },
+
+    // --- MONTYPIZZAS ---
+    {
+      id: "86",
+      Categoria: "MontyPizzas",
+      Nombre:
+        "BBQ: bacon ahumado, queso mozzarella, cebolla crujiente y salsa BBQ",
+    },
+    {
+      id: "87",
+      Categoria: "MontyPizzas",
+      Nombre: "Pollo: pollo kebab, queso mozzarella, salsa pizza y orégano",
+    },
+    {
+      id: "88",
+      Categoria: "MontyPizzas",
+      Nombre:
+        "3 Quesos: queso madurado, queso mozzarella, queso gorgonzola y orégano",
+    },
+    {
+      id: "89",
+      Categoria: "MontyPizzas",
+      Nombre:
+        "Pulled Pork: pulled pork BBQ, queso mozzarella, cebolla crujiente y salsa BBQ",
+    },
+    {
+      id: "90",
+      Categoria: "MontyPizzas",
+      Nombre: "Pepperoni: pepperoni, queso mozzarella, salsa pizza y orégano",
+    },
+
+    // --- MONTYGOURMET ---
     {
       id: "91",
-      Categoria: "MontyBurgers",
-      Nombre: "Burger, lechuga y mayonesa",
+      Categoria: "MontyGourmet",
+      Nombre: "Tortilla de patatas, tomate y mayonesa",
     },
     {
       id: "92",
-      Categoria: "MontyBurgers",
-      Nombre: "Burger, cebolla crujiente y salsa cheddar",
+      Categoria: "MontyGourmet",
+      Nombre: "Salmón ahumado y huevo hilado",
     },
     {
       id: "93",
-      Categoria: "MontyBurgers",
-      Nombre: "Burger, patatas paja y salsa BBQ",
+      Categoria: "MontyGourmet",
+      Nombre: "Salmón ahumado y pintxo donostiarra",
     },
     {
       id: "94",
-      Categoria: "MontyBurgers",
-      Nombre: "Burger, cebolla caramelizada, salsa 100M y salsa cheddar",
+      Categoria: "MontyGourmet",
+      Nombre: "Pintxo donostiarra y atún",
     },
     {
       id: "95",
-      Categoria: "MontyBurgers",
-      Nombre: "Burger, bacon ahumado, lechuga y mayonesa",
+      Categoria: "MontyGourmet",
+      Nombre: "Pintxo donostiarra y huevo hilado",
     },
-
-    // 96 - 100: MONTYPIZZAS
     {
       id: "96",
-      Categoria: "MontyPizzas",
-      Nombre: "BBQ: Bacon ahumado, mozzamix, cebolla crujiente y salsa BBQ",
+      Categoria: "MontyGourmet",
+      Nombre: "Jamón cocido, queso madurado y mantequilla",
     },
     {
       id: "97",
-      Categoria: "MontyPizzas",
-      Nombre: "Pollo: Pollo kebab, mozzamix, salsa pomodoro y orégano",
+      Categoria: "MontyGourmet",
+      Nombre: "Jamón cocido, queso madurado, tomate y mayonesa",
     },
-    {
-      id: "98",
-      Categoria: "MontyPizzas",
-      Nombre:
-        "Tres Quesos: Crema de queso Camembert, mozzamix, queso madurado y orégano",
-    },
+    { id: "98", Categoria: "MontyGourmet", Nombre: "Atún, tomate y mayonesa" },
     {
       id: "99",
-      Categoria: "MontyPizzas",
-      Nombre:
-        "Pulled Pork: Salsa BBQ, mozzamix, pulled pork y cebolla crujiente",
+      Categoria: "MontyGourmet",
+      Nombre: "Atún, huevo hilado y mayonesa",
     },
     {
       id: "100",
-      Categoria: "MontyPizzas",
-      Nombre: "Pepperoni: Pepperoni, mozzamix, salsa pomodoro y orégano",
+      Categoria: "MontyGourmet",
+      Nombre: "Jamón Gran Reserva y mantequilla",
     },
+    // --- BEBIDAS ---
+    { id: "200", Categoria: "Bebidas", Nombre: "Cerveza Quijote(33cl)" },
+    { id: "201", Categoria: "Bebidas", Nombre: "Cerveza Sancho(54cl)" },
+    { id: "202", Categoria: "Bebidas", Nombre: "Tinto Quijote(33cl)" },
+    { id: "203", Categoria: "Bebidas", Nombre: "Tinto Sancho(54cl)" },
+    { id: "204", Categoria: "Bebidas", Nombre: "Coca-Cola" },
+    { id: "205", Categoria: "Bebidas", Nombre: "Coca-Cola Zero" },
+    { id: "206", Categoria: "Bebidas", Nombre: "Fanta" },
+    { id: "207", Categoria: "Bebidas", Nombre: "Sprite" },
+    { id: "208", Categoria: "Bebidas", Nombre: "Fuze Tea" },
+    { id: "209", Categoria: "Bebidas", Nombre: "Aquarius" },
+    { id: "210", Categoria: "Bebidas", Nombre: "Appletiser" },
   ];
 
   try {
-    console.log("⏳ Subiendo los 100 montaditos...");
-    for (const item of montaditos) {
-      // Usamos setDoc para que el ID del documento sea el número (1, 2, 3...)
-      await setDoc(doc(db, "montaditos", item.id), {
-        Categoria: item.Categoria,
-        Nombre: item.Nombre,
-      });
+    console.log("Iniciando subida de la nueva carta...");
+    for (const m of montaditos) {
+      // Usamos setDoc con merge por si ya existe, que simplemente lo actualice sin romper otros campos
+      await setDoc(doc(db, "montaditos", m.id), m, { merge: true });
     }
-    console.log("✅ ¡Base de datos completa!");
+    console.log("¡Carta subida a Firebase con éxito!");
   } catch (error) {
-    console.error("❌ Error en la carga masiva:", error);
+    console.error("Error al subir la carta a Firebase: ", error);
   }
 };

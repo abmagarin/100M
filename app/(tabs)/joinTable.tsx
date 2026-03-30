@@ -1,24 +1,24 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { db, auth } from "../../firebase";
 import { usePathname, useRouter } from "expo-router";
 import {
-  doc,
-  onSnapshot,
-  getDoc,
-  updateDoc,
   arrayRemove,
   arrayUnion,
+  doc,
+  getDoc,
+  onSnapshot,
+  updateDoc,
 } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { auth, db } from "../../firebase";
 
 interface TableInvitation {
   mesaId: string;
@@ -117,7 +117,7 @@ export default function FriendsScreen() {
 
       // Pequeño delay para que el usuario vea el aviso y luego salte a la mesa
       setTimeout(() => {
-        router.replace("/tableLayout");
+        router.navigate("/tableLayout");
       }, 500);
     } catch (error) {
       console.error(error);

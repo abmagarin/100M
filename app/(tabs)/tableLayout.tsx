@@ -49,17 +49,13 @@ export default function TableLayoutScreen() {
     Record<number, number>
   >({});
 
+  const [rawPedidos, setRawPedidos] = useState<any[]>([]);
+  const [selectedUserFilter, setSelectedUserFilter] = useState<string | null>(
+    null,
+  );
+
   const pathname = usePathname();
 
-  // Datos de prueba
-  const [foodItems, setFoodItems] = useState([
-    { id: 1, name: "Montadito 10", qty: 2, who: "nadie" },
-    { id: 2, name: "Patatas", qty: 1, who: "nadie" },
-  ]);
-  const [drinkItems, setDrinkItems] = useState([
-    { id: 1, name: "Montadito 10", qty: 2, who: "nadie" },
-    { id: 2, name: "Patatas", qty: 1, who: "nadie" },
-  ]);
   const [historyItems] = useState([
     { id: 5, name: "Montadito 88", status: "Servido" },
     { id: 6, name: "Nachos", status: "En cocina" },
@@ -69,18 +65,41 @@ export default function TableLayoutScreen() {
     { id: "dklenbflndiwmwqddwaw", pfp: 6, name: "Nacho", color: 2 },
   ]);
 
-  const appendFriendData = (newFriend: {
-    id: string;
-    pfp: number;
-    name: string;
-    color: number;
-  }) => {
-    setFriendsData(
-      (
-        prevFriends: { id: string; pfp: number; name: string; color: number }[],
-      ) => [...prevFriends, newFriend],
-    );
-  };
+  // --- AGRUPADOR Y FILTRO DINÁMICO ---
+  const { foodItems, drinkItems } = useMemo(() => {
+    const agrupador: Record<string, any> = {};
+
+    rawPedidos.forEach((data) => {
+      // ✨ EL FILTRO: Si hay un amigo seleccionado y el pedido no es suyo, lo ignoramos
+      if (selectedUserFilter && data.who !== selectedUserFilter) return;
+
+      const claveUnica = `${data.categoria}_${data.idMontadito}`;
+
+      if (agrupador[claveUnica]) {
+        agrupador[claveUnica].qty += data.qty;
+      } else {
+        agrupador[claveUnica] = {
+          id: data.idMontadito,
+          name: data.name,
+          qty: data.qty,
+          who: data.who,
+          categoria: data.categoria || "Comida",
+        };
+      }
+    });
+
+    const todosLosPedidos = Object.values(agrupador);
+
+    const pedidosComida = todosLosPedidos
+      .filter((p) => p.categoria !== "Bebidas")
+      .sort((a, b) => a.id - b.id);
+
+    const pedidosBebida = todosLosPedidos
+      .filter((p) => p.categoria === "Bebidas")
+      .sort((a, b) => a.id - b.id);
+
+    return { foodItems: pedidosComida, drinkItems: pedidosBebida };
+  }, [rawPedidos, selectedUserFilter]);
 
   const incrementarBebida = (idDb: number) => {
     setSeleccionesBebidas((prev) => ({
@@ -160,9 +179,6 @@ export default function TableLayoutScreen() {
         console.error("Error al obtener la carta:", error);
       }
     };
-
-    setFoodItems([]);
-    setDrinkItems([]);
     fetchCarta();
   }, []);
 
@@ -343,50 +359,21 @@ export default function TableLayoutScreen() {
             },
           );
 
-          // --- ESCUCHADOR 2: LOS PEDIDOS AGRUPADOS ---
+          // --- ESCUCHADOR 2: LOS PEDIDOS CRUDOS ---
           const pedidosRef = collection(db, "mesas", mesaId, "pedidos");
 
           unsubscribePedidos = onSnapshot(pedidosRef, (pedidosSnap) => {
-            const agrupador: Record<string, any> = {}; // <-- Cambiamos a Record<string, any> por la clave única
-
+            const rawData: any[] = [];
             pedidosSnap.forEach((docSnap) => {
-              const data = docSnap.data();
-
-              // 1. Clave única: "Comida_1" o "Bebidas_1" para que no se mezclen si tienen el mismo ID
-              const claveUnica = `${data.categoria}_${data.idMontadito}`;
-
-              if (agrupador[claveUnica]) {
-                agrupador[claveUnica].qty += data.qty;
-              } else {
-                agrupador[claveUnica] = {
-                  id: data.idMontadito,
-                  name: data.name,
-                  qty: data.qty,
-                  who: data.who,
-                  precio: data.precio || 0,
-                  categoria: data.categoria || "Comida", // Guardamos la categoría aquí
-                };
-              }
+              rawData.push(docSnap.data());
             });
 
-            const todosLosPedidos = Object.values(agrupador);
-
-            // 2. EL SEMÁFORO: Separamos las listas y las ORDENAMOS por su ID numérico
-            const pedidosComida = todosLosPedidos
-              .filter((p) => p.categoria !== "Bebidas")
-              .sort((a, b) => a.id - b.id); // Orden ascendente: 1, 2, 3...
-
-            const pedidosBebida = todosLosPedidos
-              .filter((p) => p.categoria === "Bebidas")
-              .sort((a, b) => a.id - b.id); // Orden ascendente: 1, 2, 3...
-
-            // 3. Alimentamos las dos columnas de tu pantalla
-            setFoodItems(pedidosComida);
-            setDrinkItems(pedidosBebida);
+            // Simplemente guardamos los datos tal cual bajan de Firebase
+            setRawPedidos(rawData);
           });
         } else {
           console.log("El usuario ya no tiene mesa asignada. Redirigiendo...");
-          router.replace("/main");
+          router.navigate("/main");
         }
       }
     });
@@ -452,16 +439,42 @@ export default function TableLayoutScreen() {
     }
   };
 
+  const calcularPrecio = (idDb: number): number => {
+    if (idDb >= 1 && idDb <= 100) return 1.0;
+    if (idDb === 200 || idDb === 202) return 1.5;
+    if (idDb >= 204 && idDb <= 210) return 2.0;
+    if (idDb === 201 || idDb === 203) return 2.5;
+    return 0;
+  };
+
+  const { totalMesa, miTotal } = useMemo(() => {
+    let sumaMesa = 0;
+    let sumaMia = 0;
+    const miUid = auth.currentUser?.uid;
+
+    rawPedidos.forEach((pedido) => {
+      const precioUnitario = calcularPrecio(pedido.idMontadito);
+
+      const costeTotalLinea = precioUnitario * pedido.qty;
+
+      sumaMesa += costeTotalLinea;
+
+      if (pedido.who === miUid) {
+        sumaMia += costeTotalLinea;
+      }
+    });
+
+    return { totalMesa: sumaMesa, miTotal: sumaMia };
+  }, [rawPedidos, auth.currentUser?.uid]);
+
   return (
     <View style={styles.outerContainer}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.push("/main")}>
-            <Image
-              source={require("../../assets/images/100logo.png")}
-              style={styles.logo}
-            />
-          </TouchableOpacity>
+          <Image
+            source={require("../../assets/images/100logo.png")}
+            style={styles.logo}
+          />
           <View style={{ alignItems: "flex-end" }}>
             <TouchableOpacity
               style={{ flexDirection: "row", alignItems: "center" }}
@@ -551,14 +564,42 @@ export default function TableLayoutScreen() {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.friendsList}
               >
-                {friendsData.map((friend) => (
-                  <View key={friend.id} style={styles.friendCard}>
-                    <Pfp pfp={friend.pfp} color={friend.color} />
-                    <Text style={styles.friendName} numberOfLines={1}>
-                      {friend.name}
-                    </Text>
-                  </View>
-                ))}
+                {friendsData.map((friend) => {
+                  const isSelected = selectedUserFilter === friend.id;
+
+                  return (
+                    <TouchableOpacity
+                      key={friend.id}
+                      style={[
+                        styles.friendCard,
+                        // Le ponemos un borde rojo chulo si está seleccionado
+                        isSelected && {
+                          borderColor: "#cb464a",
+                          borderWidth: 2,
+                        },
+                      ]}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        // Si ya estaba seleccionado, lo desmarcamos (null). Si no, lo seleccionamos.
+                        setSelectedUserFilter(isSelected ? null : friend.id);
+                      }}
+                    >
+                      <Pfp pfp={friend.pfp} color={friend.color} />
+                      <Text
+                        style={[
+                          styles.friendName,
+                          isSelected && {
+                            fontWeight: "bold",
+                            color: "#cb464a",
+                          },
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {friend.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </ScrollView>
             </View>
           </ScrollView>
@@ -577,11 +618,13 @@ export default function TableLayoutScreen() {
           <View style={styles.accountsWrapper}>
             <View style={styles.accountBox}>
               <Text style={styles.accountLabel}>Total Mesa</Text>
-              <Text style={styles.accountValue}>24.50€</Text>
+              <Text style={styles.accountValue}>{totalMesa.toFixed(2)}€</Text>
             </View>
             <View style={[styles.accountBox, styles.myAccount]}>
               <Text style={styles.accountLabelWhite}>Tu parte</Text>
-              <Text style={styles.accountValueWhite}>8.20€</Text>
+              <Text style={styles.accountValueWhite}>
+                {miTotal.toFixed(2)}€
+              </Text>
             </View>
           </View>
         </View>
