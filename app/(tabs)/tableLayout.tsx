@@ -5,13 +5,14 @@ import { usePathname, useRouter } from "expo-router";
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
   onSnapshot,
   updateDoc,
 } from "firebase/firestore";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   FlatList,
   Image,
@@ -23,6 +24,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import {
+  GestureHandlerRootView,
+  Swipeable,
+} from "react-native-gesture-handler";
 import { auth, db } from "../../firebase";
 
 export default function TableLayoutScreen() {
@@ -53,6 +58,7 @@ export default function TableLayoutScreen() {
   const [selectedUserFilter, setSelectedUserFilter] = useState<string | null>(
     null,
   );
+  const swipeableRefs = useRef<Record<string, any>>({});
 
   const pathname = usePathname();
 
@@ -116,6 +122,52 @@ export default function TableLayoutScreen() {
       if (nuevasSelecciones[idDb] === 0) delete nuevasSelecciones[idDb];
       return nuevasSelecciones;
     });
+  };
+
+  const pedirOtroDirecto = async (item: any) => {
+    try {
+      const pedidosRef = collection(db, "mesas", codigoMesa, "pedidos");
+      await addDoc(pedidosRef, {
+        idMontadito: item.id,
+        name: item.name,
+        qty: 1,
+        who: auth.currentUser?.uid || "unknown",
+        categoria: item.categoria || "Comida",
+      });
+      sendToast(`¡Añadido otro ${item.name}!`);
+    } catch (error) {
+      console.error("Error al añadir +1 con swipe", error);
+    }
+  };
+
+  const eliminarUnoDirecto = async (item: any) => {
+    const miUid = auth.currentUser?.uid;
+
+    // Buscamos en rawPedidos si hay alguno de este ID que sea MÍO
+    const miPedido = rawPedidos.find(
+      (p) => p.idMontadito === item.id && p.who === miUid,
+    );
+
+    if (!miPedido) {
+      sendToast("No tienes montaditos de este tipo a tu nombre");
+      return;
+    }
+
+    try {
+      const docRef = doc(db, "mesas", codigoMesa, "pedidos", miPedido.idDoc);
+
+      if (miPedido.qty > 1) {
+        // Si hay más de uno, restamos 1
+        await updateDoc(docRef, { qty: miPedido.qty - 1 });
+        sendToast(`Restado un ${item.name}`);
+      } else {
+        // Si solo hay uno, borramos el documento
+        await deleteDoc(docRef);
+        sendToast(`Eliminado ${item.name}`);
+      }
+    } catch (error) {
+      console.error("Error al eliminar pedido", error);
+    }
   };
 
   const handleConfirmarPedidoBebida = async () => {
@@ -365,10 +417,8 @@ export default function TableLayoutScreen() {
           unsubscribePedidos = onSnapshot(pedidosRef, (pedidosSnap) => {
             const rawData: any[] = [];
             pedidosSnap.forEach((docSnap) => {
-              rawData.push(docSnap.data());
+              rawData.push({ idDoc: docSnap.id, ...docSnap.data() });
             });
-
-            // Simplemente guardamos los datos tal cual bajan de Firebase
             setRawPedidos(rawData);
           });
         } else {
@@ -468,8 +518,9 @@ export default function TableLayoutScreen() {
   }, [rawPedidos, auth.currentUser?.uid]);
 
   return (
-    <View style={styles.outerContainer}>
+    <GestureHandlerRootView style={styles.outerContainer}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
+        {" "}
         <View style={styles.header}>
           <Image
             source={require("../../assets/images/100logo.png")}
@@ -500,7 +551,6 @@ export default function TableLayoutScreen() {
             </TouchableOpacity>
           </View>
         </View>
-
         <View style={styles.pendingContainer}>
           <View style={styles.foodColumn}>
             <Text style={styles.columnTitle}>Montaditos</Text>
@@ -509,23 +559,55 @@ export default function TableLayoutScreen() {
               nestedScrollEnabled={true}
               showsVerticalScrollIndicator={false}
             >
-              {foodItems.map((item) => (
-                <View key={item.id} style={styles.itemCard}>
-                  <View style={styles.itemLeftInfo}>
-                    <Text style={styles.itemNumber}>#{item.id}</Text>
-                    <Text
-                      style={styles.itemText}
-                      numberOfLines={2}
-                      ellipsizeMode="tail"
-                    >
-                      {item.name}
-                    </Text>
+              {foodItems.map((item) => {
+                const renderFondoAñadir = () => (
+                  <View style={styles.swipeLeftAction}>
+                    <Ionicons name="add-circle" size={24} color="white" />
+                    <Text style={styles.swipeText}>+1</Text>
                   </View>
-                  <Text style={styles.itemQty}>x{item.qty}</Text>
-                </View>
-              ))}
+                );
+                const renderFondoEliminar = () => (
+                  <View style={styles.swipeRightAction}>
+                    <Text style={styles.swipeText}>-1</Text>
+                    <Ionicons name="trash-outline" size={24} color="white" />
+                  </View>
+                );
+                return (
+                  <Swipeable
+                    key={item.id}
+                    ref={(ref) => {
+                      swipeableRefs.current[item.id] = ref;
+                    }}
+                    renderLeftActions={renderFondoAñadir}
+                    onSwipeableLeftOpen={() => {
+                      pedirOtroDirecto(item);
+                      swipeableRefs.current[item.id]?.close();
+                    }}
+                    renderRightActions={renderFondoEliminar}
+                    onSwipeableRightOpen={() => {
+                      eliminarUnoDirecto(item);
+                      swipeableRefs.current[item.id]?.close();
+                    }}
+                    overshootLeft={false}
+                    overshootRight={false}
+                  >
+                    <View style={styles.itemCard}>
+                      <View style={styles.itemLeftInfo}>
+                        <Text style={styles.itemNumber}>#{item.id}</Text>
+                        <Text
+                          style={styles.itemText}
+                          numberOfLines={2}
+                          ellipsizeMode="tail"
+                        >
+                          {item.name}
+                        </Text>
+                      </View>
+                      <Text style={styles.itemQty}>x{item.qty}</Text>
+                    </View>
+                  </Swipeable>
+                );
+              })}
             </ScrollView>
-
             <TouchableOpacity
               style={styles.btnAdd}
               onPress={() => {
@@ -537,12 +619,54 @@ export default function TableLayoutScreen() {
           </View>
           <View style={styles.drinkColumn}>
             <Text style={styles.columnTitle}>Bebidas</Text>
-            {drinkItems.map((item) => (
-              <View key={item.id} style={[styles.itemCard, styles.drinkCard]}>
-                <Text style={styles.itemTextSmall}>{item.name}</Text>
-                <Text style={styles.itemQty}>x{item.qty}</Text>
-              </View>
-            ))}
+            <ScrollView
+              style={{ maxHeight: 220 }}
+              nestedScrollEnabled={true}
+              showsVerticalScrollIndicator={false}
+            >
+              {drinkItems.map((item) => {
+                // Reutilizamos los mismos fondos de añadir/eliminar
+                const renderFondoAñadir = () => (
+                  <View style={styles.swipeLeftAction}>
+                    <Ionicons name="add-circle" size={24} color="white" />
+                    {/* Quitamos el texto "+1" aquí para que no se apriete demasiado en la columna estrecha */}
+                  </View>
+                );
+
+                const renderFondoEliminar = () => (
+                  <View style={styles.swipeRightAction}>
+                    <Ionicons name="trash-outline" size={24} color="white" />
+                  </View>
+                );
+
+                return (
+                  <Swipeable
+                    key={item.id}
+                    ref={(ref) => {
+                      swipeableRefs.current[item.id] = ref;
+                    }}
+                    renderLeftActions={renderFondoAñadir}
+                    onSwipeableLeftOpen={() => {
+                      pedirOtroDirecto(item);
+                      swipeableRefs.current[item.id]?.close();
+                    }}
+                    renderRightActions={renderFondoEliminar}
+                    onSwipeableRightOpen={() => {
+                      eliminarUnoDirecto(item);
+                      swipeableRefs.current[item.id]?.close();
+                    }}
+                    overshootLeft={false}
+                    overshootRight={false}
+                  >
+                    <View style={[styles.itemCard, styles.drinkCard]}>
+                      <Text style={styles.itemTextSmall}>{item.name}</Text>
+                      <Text style={styles.itemQty}>x{item.qty}</Text>
+                    </View>
+                  </Swipeable>
+                );
+              })}
+            </ScrollView>
+
             <TouchableOpacity
               style={[styles.btnAdd, { backgroundColor: "#8ab3ad" }]}
               onPress={() => setIsBebidaVisible(true)}
@@ -945,7 +1069,7 @@ export default function TableLayoutScreen() {
           <Text style={styles.toastText}>{toastMsg}</Text>
         </View>
       )}
-    </View>
+    </GestureHandlerRootView>
   );
 }
 
@@ -1236,6 +1360,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
+    backgroundColor: "#fff",
   },
   itemLeftInfo: {
     flex: 1, // Impide que el texto empuje la cantidad hacia afuera
@@ -1260,5 +1385,29 @@ const styles = StyleSheet.create({
     color: "#cb464a",
     fontWeight: "700",
     fontSize: 15,
+  },
+  swipeLeftAction: {
+    backgroundColor: "#8ab3ad", // Verde elegante
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  swipeRightAction: {
+    backgroundColor: "#cb464a", // Tu rojo corporativo
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  swipeText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+    marginLeft: 5,
   },
 });
