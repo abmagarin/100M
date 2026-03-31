@@ -204,7 +204,7 @@ export default function friendsScreen() {
         </TouchableOpacity>
 
         <View style={styles.form}>
-          <Text style={styles.title}>YOUR CODE</Text>
+          <Text style={styles.title}>TU CÓDIGO</Text>
 
           <TouchableOpacity
             style={styles.codeContainer}
@@ -293,7 +293,7 @@ export default function friendsScreen() {
           </View>
 
           {fullFriends.length === 0 ? (
-            <Text style={styles.noRequests}>No friends yet.</Text>
+            <Text style={styles.noRequests}>No hay amigos aun.</Text>
           ) : (
             fullFriends.map((friend) => (
               <View key={friend.codigoUnico} style={styles.friendCard}>
@@ -303,7 +303,7 @@ export default function friendsScreen() {
                   </View>
                   <View>
                     <Text style={styles.requestName}>{friend.nombre}</Text>
-                    <Text style={styles.requestCode}>Friend since 2026</Text>
+                    <Text style={styles.requestCode}>Amigos desde 2026</Text>
                   </View>
                 </View>
 

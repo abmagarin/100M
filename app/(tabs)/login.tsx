@@ -79,7 +79,7 @@ export default function LoginScreen() {
         <View style={styles.passwordContainer}>
           <TextInput
             style={styles.inputPassword}
-            placeholder="Password"
+            placeholder="Contraseña"
             placeholderTextColor="#878787"
             secureTextEntry={!isPasswordVisible}
             value={password}
@@ -104,7 +104,7 @@ export default function LoginScreen() {
           style={[styles.btn, styles.btnRed]}
           onPress={handleLogin}
         >
-          <Text style={styles.btnTextWhite}>SIGN IN</Text>
+          <Text style={styles.btnTextWhite}>ENTRAR</Text>
         </TouchableOpacity>
       </View>
       <Image

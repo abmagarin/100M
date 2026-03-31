@@ -172,11 +172,11 @@ export default function FriendsScreen() {
 
         {/* INPUT MANUAL */}
         <View style={styles.form}>
-          <Text style={styles.title}>Join with Table ID</Text>
+          <Text style={styles.title}>Unirse a una mesa</Text>
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.innerInput}
-              placeholder="Paste Table ID here..."
+              placeholder="Pegar ID de mesa aquí..."
               value={tableInput}
               onChangeText={setTableInput}
               autoCapitalize="none"
@@ -192,10 +192,10 @@ export default function FriendsScreen() {
 
         {/* LISTA DE INVITACIONES */}
         <View style={styles.requestsSection}>
-          <Text style={styles.title}>Pending Invitations</Text>
+          <Text style={styles.title}>Invitaciones pendientes</Text>
 
           {fullTableRequests.length === 0 ? (
-            <Text style={styles.noRequests}>No invitations yet</Text>
+            <Text style={styles.noRequests}>Sin invitaciones aun</Text>
           ) : (
             fullTableRequests.map((req) => (
               <View key={req.mesaId} style={styles.card}>

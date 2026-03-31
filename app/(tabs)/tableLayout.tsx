@@ -76,7 +76,6 @@ export default function TableLayoutScreen() {
     const agrupador: Record<string, any> = {};
 
     rawPedidos.forEach((data) => {
-      // ✨ EL FILTRO: Si hay un amigo seleccionado y el pedido no es suyo, lo ignoramos
       if (selectedUserFilter && data.who !== selectedUserFilter) return;
 
       const claveUnica = `${data.categoria}_${data.idMontadito}`;
@@ -143,7 +142,6 @@ export default function TableLayoutScreen() {
   const eliminarUnoDirecto = async (item: any) => {
     const miUid = auth.currentUser?.uid;
 
-    // Buscamos en rawPedidos si hay alguno de este ID que sea MÍO
     const miPedido = rawPedidos.find(
       (p) => p.idMontadito === item.id && p.who === miUid,
     );
@@ -520,7 +518,6 @@ export default function TableLayoutScreen() {
   return (
     <GestureHandlerRootView style={styles.outerContainer}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
-        {" "}
         <View style={styles.header}>
           <Image
             source={require("../../assets/images/100logo.png")}
@@ -696,7 +693,6 @@ export default function TableLayoutScreen() {
                       key={friend.id}
                       style={[
                         styles.friendCard,
-                        // Le ponemos un borde rojo chulo si está seleccionado
                         isSelected && {
                           borderColor: "#cb464a",
                           borderWidth: 2,
@@ -704,7 +700,6 @@ export default function TableLayoutScreen() {
                       ]}
                       activeOpacity={0.7}
                       onPress={() => {
-                        // Si ya estaba seleccionado, lo desmarcamos (null). Si no, lo seleccionamos.
                         setSelectedUserFilter(isSelected ? null : friend.id);
                       }}
                     >
@@ -1032,10 +1027,11 @@ export default function TableLayoutScreen() {
 
             <TextInput
               style={styles.modalInput}
-              placeholder="Ej: Mesa de los cracks"
+              placeholder="Nombre de tu mesa"
               value={tempNombre}
               onChangeText={setTempNombre}
               autoFocus={true}
+              maxLength={20}
             />
 
             <View style={styles.modalButtons}>

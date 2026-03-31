@@ -167,7 +167,7 @@ export default function TableInviteScreen() {
         </TouchableOpacity>
 
         <Text style={styles.title}>
-          SELECT FRIENDS ({selectedFriends.length})
+          INVITAR AMIGOS ({selectedFriends.length})
         </Text>
 
         <View style={styles.gridFriends}>

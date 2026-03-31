@@ -128,11 +128,11 @@ export default function RegisterScreen() {
       />
 
       <View style={styles.form}>
-        <Text style={styles.title}>CREATE YOUR ACCOUNT</Text>
+        <Text style={styles.title}>CREA TU CUENTA</Text>
 
         <TextInput
           style={styles.input}
-          placeholder="Name"
+          placeholder="Nombre"
           placeholderTextColor="#878787"
           value={nombre}
           onChangeText={setNombre}
@@ -151,7 +151,7 @@ export default function RegisterScreen() {
         <View style={styles.passwordContainer}>
           <TextInput
             style={styles.inputPassword}
-            placeholder="Password"
+            placeholder="Contraseña"
             placeholderTextColor="#878787"
             secureTextEntry={!isPasswordVisible}
             value={password}
@@ -176,7 +176,7 @@ export default function RegisterScreen() {
           style={[styles.btn, styles.btnRed]}
           onPress={handleRegister}
         >
-          <Text style={styles.btnTextWhite}>CREATE</Text>
+          <Text style={styles.btnTextWhite}>CREAR</Text>
         </TouchableOpacity>
       </View>
       <Image
