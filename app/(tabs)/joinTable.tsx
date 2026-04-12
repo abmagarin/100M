@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
+  BackHandler,
   Image,
   ScrollView,
   StyleSheet,
@@ -37,6 +38,22 @@ export default function FriendsScreen() {
   const [toastMsg, setToastMsg] = useState("");
 
   const pathname = usePathname();
+
+  useEffect(() => {
+    const onBackPress = () => {
+      router.push("/main");
+      return true;
+    };
+
+    const backHandlerSubscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress,
+    );
+
+    return () => {
+      backHandlerSubscription.remove();
+    };
+  }, []);
 
   const sendToast = (msg: string) => {
     setToastMsg(msg);

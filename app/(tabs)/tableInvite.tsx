@@ -15,6 +15,7 @@ import {
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
+  BackHandler,
   Image,
   ScrollView,
   StyleSheet,
@@ -39,6 +40,22 @@ export default function TableInviteScreen() {
   const [mostrarToast, setMostrarToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const pathname = usePathname();
+
+  useEffect(() => {
+    const onBackPress = () => {
+      router.push("/main");
+      return true;
+    };
+
+    const backHandlerSubscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress,
+    );
+
+    return () => {
+      backHandlerSubscription.remove();
+    };
+  }, []);
 
   const sendToast = (msg: string) => {
     setToastMsg(msg);

@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  BackHandler,
   Image,
   ScrollView,
   StyleSheet,
@@ -30,6 +31,21 @@ export default function LoginScreen() {
   /*useEffect(() => {
     inicializarCartaCompleta();
   }, []);*/
+  useEffect(() => {
+    const onBackPress = () => {
+      router.push("/main");
+      return true;
+    };
+
+    const backHandlerSubscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress,
+    );
+
+    return () => {
+      backHandlerSubscription.remove();
+    };
+  }, []);
 
   return (
     <ScrollView

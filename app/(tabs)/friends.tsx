@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import { onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
+  BackHandler,
   Image,
   ScrollView,
   StyleSheet,
@@ -45,6 +46,22 @@ export default function friendsScreen() {
   const [friendCode, setFriendCode] = useState("");
   const [mostrarToast, setMostrarToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
+
+  useEffect(() => {
+    const onBackPress = () => {
+      router.push("/main");
+      return true;
+    };
+
+    const backHandlerSubscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress,
+    );
+
+    return () => {
+      backHandlerSubscription.remove();
+    };
+  }, []);
 
   const sendToast = (msg: string) => {
     setToastMsg(msg);

@@ -1,7 +1,7 @@
 import Pfp from "@/components/Pfp";
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
-import { usePathname, useRouter } from "expo-router";
+import { useFocusEffect, usePathname, useRouter } from "expo-router";
 import {
   addDoc,
   collection,
@@ -12,8 +12,15 @@ import {
   onSnapshot,
   updateDoc,
 } from "firebase/firestore";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
+  BackHandler,
   FlatList,
   Image,
   Modal,
@@ -36,6 +43,8 @@ export default function TableLayoutScreen() {
   const [codigoMesa, setCodigoMesa] = useState("#123456");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [confirmCloseVisible, setIsConfirmCloseVisible] = useState(false);
+  const [confirmCloseNonHostVisible, setIsConfirmNonHostCloseVisible] =
+    useState(false);
   const [confirmMontaditoVisible, setIsMontaditoVisible] = useState(false);
   const [isCloseVisible, setCloseVisible] = useState(false);
   const [isInactivoVisible, setInactivoVisible] = useState(false);
@@ -61,6 +70,28 @@ export default function TableLayoutScreen() {
   const swipeableRefs = useRef<Record<string, any>>({});
 
   const pathname = usePathname();
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        if (isCloseVisible) {
+          setIsConfirmCloseVisible(true);
+        } else {
+          setIsConfirmNonHostCloseVisible(true);
+        }
+        return true;
+      };
+
+      const backHandlerSubscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress,
+      );
+
+      return () => {
+        backHandlerSubscription.remove();
+      };
+    }, [isCloseVisible]),
+  );
 
   const [historyItems] = useState([
     { id: 5, name: "Montadito 88", status: "Servido" },
@@ -463,6 +494,37 @@ export default function TableLayoutScreen() {
           usuariosActivos: [],
         });
       }
+
+      await updateDoc(userRef, {
+        table: "",
+      });
+    } catch (error) {
+      console.error(`Error cerrando la mesa: `, error);
+    }
+  };
+
+  const salirDeMesa = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userRef = doc(db, "usuarios", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        console.error("No se encontró el perfil del usuario");
+        return;
+      }
+
+      const datosUsuario = userSnap.data();
+      const mesaId = datosUsuario.table;
+
+      if (!mesaId || mesaId === "") {
+        console.log("Mesa ya vaciada previamente. Abortando ejecución.");
+        return;
+      }
+
+      const mesaRef = doc(db, "mesas", mesaId);
 
       await updateDoc(userRef, {
         table: "",
@@ -973,6 +1035,43 @@ export default function TableLayoutScreen() {
                   {Object.values(seleccionesBebidas).reduce((a, b) => a + b, 0)}
                   )
                 </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={confirmCloseNonHostVisible}
+        onRequestClose={() => setIsConfirmNonHostCloseVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={[styles.modalTitle, { textAlign: "center" }]}>
+              ¿Seguro que quieres salir de la mesa?
+            </Text>
+            <Text style={styles.modalText}>
+              Tendrás que volver a ser invitado para entrar
+            </Text>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.btnCancel}
+                onPress={() => setIsConfirmNonHostCloseVisible(false)}
+              >
+                <Text style={styles.btnTextCancel}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.btnConfirm}
+                onPress={() => {
+                  salirDeMesa();
+                  setIsConfirmNonHostCloseVisible(false);
+                  router.push("/main");
+                }}
+              >
+                <Text style={styles.btnTextConfirm}>Aceptar</Text>
               </TouchableOpacity>
             </View>
           </View>
